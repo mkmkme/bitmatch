@@ -5,3 +5,5 @@ To build bitmatch, use:
 To test, use:
 
 	$ make test
+
+To see build status, see https://travis-ci.org/reverendhomer/bitmatch
