@@ -6,7 +6,7 @@ TGT = bitmatch
 all: $(TGT)
 
 $(TGT): $(OBJS)
-	$(CC) $(LDFLAGS) $^ -o $(TGT)
+	$(CC) $^ -o $(TGT) $(LDFLAGS) 
 
 clean:
 	rm -f *.o $(TGT)
