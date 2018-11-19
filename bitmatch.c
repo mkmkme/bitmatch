@@ -1,8 +1,4 @@
-#include <assert.h>
-#include <errno.h>
-#include <fcntl.h>
 #include <math.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,15 +15,10 @@ struct input_stream {
 
 static inline int input_stream_init(struct input_stream *is, uint64_t numbits)
 {
-	int rc;
-
 	is->idx = 0;
-	rc = bitset_init(&(is->set), numbits);
-	if (rc < 0)
-		return rc;
-	rc = read(STDIN_FILENO, is->set.data, is->set.cells);
-	if (rc < is->set.cells)
-		printf("warning: read %d, cells %lu\n", rc, is->set.cells);
+	if (bitset_init(&(is->set), numbits) < 0)
+		return -1;
+	read(STDIN_FILENO, is->set.data, is->set.cells);
 	return 0;
 }
 
@@ -43,20 +34,14 @@ static inline int input_stream_next_bit(struct input_stream *is)
 	return 0;
 }
 
-static void fill_arg_bitset(struct bitset *bs, const char *str, int len)
+static void fill_arg_bitset(struct bitset *bs, const char *str)
 {
-	int i = bs->length;
-	size_t j = 0;
-	for (; i >= 4; i -= 4) {
-		printf("i = %d, j = %d\n", i, j);
-		bitset_set_bits(bs, i, i - 4 + 1, get_hex(str[j++]));
-		bitset_print(bs, "arg: ");
-	}
-	if (i > 0) {
-		printf("STILL i = %d, j = %d\n", i, j);
-		bitset_set_bits(bs, i, 1, get_hex(str[j]) >> (4 - i));
-	}
-	bitset_print(bs, "arg: ");
+	int i;
+	size_t chr = 0; // number of the symbol in the string
+	for (i = bs->length; i >= 4; i -= 4)
+		bitset_set_bits(bs, i, i - 4 + 1, get_hex(str[chr++]));
+	if (i > 0)
+		bitset_set_bits(bs, i, 1, get_hex(str[chr]) >> (4 - i));
 }
 
 int main(int argc, char *argv[])
@@ -81,14 +66,14 @@ int main(int argc, char *argv[])
 		printf("cannot init arg bit set\n");
 		return 2;
 	}
-	fill_arg_bitset(&arg_set, argv[1], strlen(argv[1]));
+	fill_arg_bitset(&arg_set, argv[1]);
 	if (input_stream_init(&is, total_bits) < 0) {
 		printf("can't init input stream\n");
 		return 2;
 	}
 
 	for (;;) {
-		if (memcmp(is.set.data, arg_set.data, ceil(total_bits * 1. / 64)) == 0)
+		if (memcmp(is.set.data, arg_set.data, arg_set.cells * sizeof(uint64_t)) == 0)
 			break;
 		if (input_stream_next_bit(&is) < 0) {
 			bitset_free(&arg_set);

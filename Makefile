@@ -1,4 +1,4 @@
-CFLAGS = -g -Wall -Wextra -pedantic -O3
+CFLAGS = -Wall -Wextra -pedantic -O3
 LDFLAGS = -O3 -lm
 OBJS = $(patsubst %.c,%.o,$(wildcard *.c))
 TGT = bitmatch

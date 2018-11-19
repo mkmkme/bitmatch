@@ -1,6 +1,7 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#include <assert.h>
 #include <stdint.h>
 
 inline uint8_t get_hex(char c)
