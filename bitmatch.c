@@ -1,84 +1,103 @@
 #include <assert.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
-struct input_bitstream {
-	uint8_t buf;
-	int8_t idx;
+#include "bitset.h"
+#include "util.h"
+
+struct input_stream {
+	struct bitset set;
+	uint8_t bit_buf;
+	uint8_t idx;
 };
 
-static inline uint8_t get_hex(char c)
+static inline int input_stream_init(struct input_stream *is, uint64_t numbits)
 {
-	if (c >= '0' && c <= '9')
-		return c - '0';
-	if (c >= 'a' && c <= 'f')
-		return c + 10 - 'a';
-	assert(0);
-}
+	int rc;
 
-static inline uint8_t get_bit(uint8_t word, uint8_t nbit)
-{
-	return (word >> nbit) & 1;
-}
-
-static inline void input_bitstream_init(struct input_bitstream* bs)
-{
-	bs->idx = -1;
-}
-
-static int input_bitstream_next_bit(struct input_bitstream* bs, uint8_t* ret_b)
-{
-	if (bs->idx < 0) {
-		if (!read(0, &bs->buf, 1))
-			return -1;
-		bs->idx = 7;
-	}
-	*ret_b = get_bit(bs->buf, bs->idx);
-	--bs->idx;
+	is->idx = 0;
+	rc = bitset_init(&(is->set), numbits);
+	if (rc < 0)
+		return rc;
+	rc = read(STDIN_FILENO, is->set.data, is->set.cells);
+	if (rc < is->set.cells)
+		printf("warning: read %d, cells %lu\n", rc, is->set.cells);
 	return 0;
 }
 
-static inline uint8_t pattern_get_bit(const char *str, uint64_t bit)
+static inline int input_stream_next_bit(struct input_stream *is)
 {
-	const uint8_t byte = get_hex(str[bit / 4]);
-	return get_bit(byte, 3 - bit % 4);
+	if (is->idx == 0) {
+		if (!read(STDIN_FILENO, &is->bit_buf, 1))
+			return -1;
+		is->idx = 8;
+	}
+	bitset_shift_with_bit(&is->set, get_bit(is->bit_buf, is->idx));
+	--is->idx;
+	return 0;
+}
+
+static void fill_arg_bitset(struct bitset *bs, const char *str, int len)
+{
+	int i = bs->length;
+	size_t j = 0;
+	for (; i >= 4; i -= 4) {
+		printf("i = %d, j = %d\n", i, j);
+		bitset_set_bits(bs, i, i - 4 + 1, get_hex(str[j++]));
+		bitset_print(bs, "arg: ");
+	}
+	if (i > 0) {
+		printf("STILL i = %d, j = %d\n", i, j);
+		bitset_set_bits(bs, i, 1, get_hex(str[j]) >> (4 - i));
+	}
+	bitset_print(bs, "arg: ");
 }
 
 int main(int argc, char *argv[])
 {
-	const char *pattern;
 	char *endptr = NULL;
 	uint64_t total_bits;
-	struct input_bitstream ibs;
+	struct bitset arg_set;
+	struct input_stream is;
 
 	if (argc != 3) {
 		fprintf(stderr, "usage: %s PATTERN NBITS\n", argv[0]);
 		return 2;
 	}
 
-	pattern = argv[1];
 	total_bits = strtoull(argv[2], &endptr, 10);
 	if (endptr == NULL || endptr == argv[2] || *endptr != '\0') {
 		printf("bad nbits '%s'\n", argv[2]);
 		return 2;
 	}
 
-	input_bitstream_init(&ibs);
+	if (bitset_init(&arg_set, total_bits) < 0) {
+		printf("cannot init arg bit set\n");
+		return 2;
+	}
+	fill_arg_bitset(&arg_set, argv[1], strlen(argv[1]));
+	if (input_stream_init(&is, total_bits) < 0) {
+		printf("can't init input stream\n");
+		return 2;
+	}
 
 	for (;;) {
-		uint64_t i = 0;
-		uint8_t input;
-		for (; i < total_bits; ++i) {
-			const uint8_t arg = pattern_get_bit(pattern, i);
-			if (input_bitstream_next_bit(&ibs, &input) < 0)
-				return 1;
-			if (arg != input)
-				break;
+		if (memcmp(is.set.data, arg_set.data, ceil(total_bits * 1. / 64)) == 0)
+			break;
+		if (input_stream_next_bit(&is) < 0) {
+			bitset_free(&arg_set);
+			bitset_free(&is.set);
+			return 1;
 		}
-		if (i == total_bits)
-			return 0;
 	}
+	bitset_free(&arg_set);
+	bitset_free(&is.set);
+	return 0;
 }
 

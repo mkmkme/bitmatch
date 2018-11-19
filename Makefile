@@ -1,10 +1,18 @@
-CFLAGS = -Wall -Wextra -pedantic -O3
+CFLAGS = -g -Wall -Wextra -pedantic -O3
+LDFLAGS = -O3 -lm
+OBJS = $(patsubst %.c,%.o,$(wildcard *.c))
 TGT = bitmatch
 
 all: $(TGT)
 
+$(TGT): $(OBJS)
+	$(CC) $(LDFLAGS) $^ -o $(TGT)
+
 clean:
-	rm -f $(TGT)
+	rm -f *.o $(TGT)
+
+$(OBJS): %.o: %.c
+	$(CC) -o $*.o -c $(CFLAGS) $<
 
 test: $(TGT)
 	# given test case
