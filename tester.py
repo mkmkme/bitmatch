@@ -6,20 +6,7 @@ import sys
 
 
 def hex_to_bita(arg):
-    a = bitarray(len(arg) * 4)
-
-    def get_bitarray_from_chr(c, pos):
-        if '0' <= c <= '9':
-            return bitarray(format(ord(c) - ord('0'), '04b'))
-        if 'a' <= c <= 'f':
-            return bitarray(format(ord(c) + 10 - ord('a'), '04b'))
-        raise argparse.ArgumentTypeError('bad sym %s in pos %d' % (c, pos))
-
-    for num, sym in enumerate(arg):
-        pos = num * 4
-        a[pos:pos + 4] = get_bitarray_from_chr(sym, num)
-
-    return a
+    return bitarray(bin(int(arg, 16))[2:])
 
 
 p = argparse.ArgumentParser()
@@ -31,10 +18,7 @@ args = p.parse_args()
 
 
 inp = bitarray()
-for byte in sys.stdin.buffer.read():
-    c = bitarray(format(byte, '08b'))
-    inp.extend(c)
-
+inp.frombytes(sys.stdin.buffer.read())
 
 print('input has %d bits' % inp.length())
 print('input = %s' % inp)
