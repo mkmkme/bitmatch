@@ -26,6 +26,8 @@ void bitset_set_bits(struct bitset *bs, uint64_t lbit, uint64_t fbit, uint64_t v
 	const uint64_t lcell = (lbit-1) / 64; // cell containing last bit
 	const uint64_t fcell = (fbit-1) / 64; // cell containing first bit
 
+	assert(lbit >= fbit);
+
 	if (lcell == fcell) {
 		DBG("lbit=%lu, fbit=%lu, val=%lu, lcell=%lu\n", lbit - 64 * lcell, fbit - 64 * lcell, val, lcell);
 		copy_range_bit(&bs->data[lcell], lbit - 64 * lcell, fbit - 64 * lcell, val);
