@@ -36,8 +36,8 @@ void bitset_set_bits(struct bitset *bs, uint64_t lbit, uint64_t fbit, uint64_t v
 		//       ___ | ____
 		const uint8_t total_bits_to_send = lbit - fbit + 1; // 11 - 5 + 1 = 7
 		// numbers of bits in their cells
-		const uint8_t lbitcell = lbit % 64; // 3
-		const uint8_t fbitcell = fbit % 64; // 5
+		const uint8_t lbitcell = (lbit-1) % 64 + 1; // 3
+		const uint8_t fbitcell = (fbit-1) % 64 + 1; // 5
 		// lbit for first bit
 		const uint8_t fpartmaxidx = 64 - fbitcell + 1; // 8 - 5 + 1 = 4
 		const uint64_t fbitdata = get_range_bit(val, fpartmaxidx, 1);
