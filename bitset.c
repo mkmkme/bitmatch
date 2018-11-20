@@ -57,7 +57,11 @@ void bitset_shift_with_bit(struct bitset *bs, uint8_t bit)
 		lbit = t;
 	}
 	// now truncate the first word
-	bitset_set_bits(bs, (uint64_t)ceil(bs->length / 64.) * 64, bs->length + 1, 0);
+	lbit = (uint64_t)ceil(bs->length / 64.) * 64;
+	if (lbit > bs->length) {
+		DBG("truncating %lu..%lu\n", bs->length + 1, lbit);
+		bitset_set_bits(bs, lbit, bs->length + 1, 0);
+	}
 }
 
 #ifdef DEBUG_PRINT
