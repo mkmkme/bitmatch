@@ -6,7 +6,10 @@ import sys
 
 
 def hex_to_bita(arg):
-    return bitarray(bin(int(arg, 16))[2:])
+    a = bitarray(bin(int(arg, 16))[2:])
+    if a.length() % 4 != 0:
+        a = bitarray('0' * (4 - (a.length() % 4))) + a
+    return a
 
 
 p = argparse.ArgumentParser()
