@@ -71,9 +71,10 @@ static inline void print_bin(uint64_t x)
 
 void bitset_print(struct bitset *bs, const char *pref)
 {
-	uint64_t i;
+	int64_t i;
 	printf("%s: ", pref);
-	for (i = 0; i < bs->cells; ++i)
+	for (i = bs->cells - 1; i >= 0; --i)
 		print_bin(bs->data[i]);
+	putchar('\n');
 }
 #endif
