@@ -4,6 +4,13 @@
 #include <assert.h>
 #include <stdint.h>
 
+#ifdef DEBUG_PRINT
+#include <stdio.h>
+#define DBG(...) printf(__VA_ARGS__)
+#else
+#define DBG(...)
+#endif
+
 inline uint8_t get_hex(char c)
 {
 	if (c >= '0' && c <= '9')
@@ -22,6 +29,5 @@ inline uint8_t get_bit(uint64_t word, uint8_t nbit)
 uint64_t get_range_bit(uint64_t word, uint8_t lbit, uint8_t fbit);
 void set_range_bit(uint64_t *word, uint8_t lbit, uint8_t fbit, uint8_t val);
 void copy_range_bit(uint64_t *word, uint8_t lbit, uint8_t fbit, uint64_t val);
-
 
 #endif

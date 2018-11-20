@@ -72,6 +72,7 @@ int main(int argc, char *argv[])
 		return 2;
 	}
 
+	bitset_print(&arg_set, "ARG");
 	for (;;) {
 		if (memcmp(is.set.data, arg_set.data, arg_set.cells * sizeof(uint64_t)) == 0)
 			break;

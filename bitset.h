@@ -13,5 +13,10 @@ int bitset_init(struct bitset *bs, uint64_t length);
 void bitset_free(struct bitset *bs);
 void bitset_set_bits(struct bitset *bs, uint64_t lbit, uint64_t fbit, uint64_t val);
 void bitset_shift_with_bit(struct bitset *bs, uint8_t bit);
+#ifdef DEBUG_PRINT
+void bitset_print(struct bitset *bs, const char *pref);
+#else
+#define bitset_print(a, b)
+#endif
 
 #endif // BITSET_H

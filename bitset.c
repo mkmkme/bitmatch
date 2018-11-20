@@ -59,3 +59,20 @@ void bitset_shift_with_bit(struct bitset *bs, uint8_t bit)
 	bitset_set_bits(bs, (uint64_t)ceil(bs->length / 64.) * 64, bs->length + 1, 0);
 }
 
+#ifdef DEBUG_PRINT
+static inline void print_bin(uint64_t x)
+{
+	int i;
+	for (i = 0; i < 64; i++)
+		putchar(((x >> (63 - i)) & 1) ? '1' : '0');
+	putchar('\n');
+}
+
+void bitset_print(struct bitset *bs, const char *pref)
+{
+	uint64_t i;
+	printf("%s: ", pref);
+	for (i = 0; i < bs->cells; ++i)
+		print_bin(bs->data[i]);
+}
+#endif
