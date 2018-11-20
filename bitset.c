@@ -42,8 +42,15 @@ void bitset_set_bits(struct bitset *bs, uint64_t lbit, uint64_t fbit, uint64_t v
 		const uint8_t fbitcell = (fbit-1) % 64 + 1; // 5
 		// lbit for first bit
 		const uint8_t fpartmaxidx = 64 - fbitcell + 1; // 8 - 5 + 1 = 4
+
 		const uint64_t fbitdata = get_range_bit(val, fpartmaxidx, 1);
 		const uint64_t lbitdata = get_range_bit(val, total_bits_to_send, fpartmaxidx + 1);
+		DBG("value = %lx\n", val);
+		DBG("lbitcell=%u, fbitcell=%u, fpartmaxidx=%u, total_bits=%u\n",
+			lbitcell, fbitcell, fpartmaxidx, total_bits_to_send);
+		DBG("[%lu](%u..%u) = %lx, [%lu](%u..%u)  = %lx (total %u)\n",
+				lcell, 1, lbitcell, lbitdata,
+				fcell, fbitcell, 64, fbitdata, total_bits_to_send);
 		copy_range_bit(&bs->data[lcell], lbitcell, 1, lbitdata);
 		copy_range_bit(&bs->data[fcell], 64, fbitcell, fbitdata);
 	}
@@ -55,6 +62,7 @@ void bitset_shift_with_bit(struct bitset *bs, uint8_t bit)
 	uint64_t lbit = bit;
 	for (i = 0; i < bs->cells; ++i) {
 		uint64_t t = get_bit(bs->data[i], 64);
+		DBG("lbit=%lu\n", lbit);
 		bs->data[i] = (bs->data[i] << 1) | lbit;
 		lbit = t;
 	}
