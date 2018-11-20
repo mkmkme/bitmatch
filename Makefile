@@ -1,4 +1,4 @@
-CFLAGS = -Wall -Wextra -pedantic -O3 -std=c99 -DDEBUG_PRINT
+CFLAGS = -Wall -Wextra -pedantic -O3 -std=c99 # -g -DDEBUG_PRINT
 LDFLAGS = -O3 -lm
 OBJS = $(patsubst %.c,%.o,$(wildcard *.c))
 TGT = bitmatch
