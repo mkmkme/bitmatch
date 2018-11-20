@@ -16,10 +16,7 @@ struct input_stream {
 static inline int input_stream_init(struct input_stream *is, uint64_t numbits)
 {
 	is->idx = 0;
-	if (bitset_init(&(is->set), numbits) < 0)
-		return -1;
-	read(STDIN_FILENO, is->set.data, is->set.cells);
-	return 0;
+	return bitset_init(&(is->set), numbits);
 }
 
 static inline int input_stream_next_bit(struct input_stream *is)
